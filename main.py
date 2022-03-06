@@ -99,7 +99,9 @@ def win(p):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     run = False
-        win_t = Font.render("player"+p.name+" win", True, (0, 0, 0))
+                if event.key == pygame.K_ESCAPE:
+                    run = False
+        win_t = Font.render("player"+p.name+" win", True, (50, 0, 255))
         screen.blit(fa, (245, 500))
         screen.blit(fb, (320, 570))
         screen.blit(win_t, (290, 400))
@@ -111,13 +113,49 @@ def game():
     p1 = player('1', 1)
     p2 = player('2', 2)
 
-    design()
+    u = 1
+    m = False
+    x1, y1 = 0, 0
+    pre = [0, 0]
+    w = 0
     turn = 0
     run = True
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    run = False
+                if event.key == pygame.K_LCTRL:
+                    u = 5            
+                if event.key == pygame.K_RIGHT:
+                    if (u == 1 and pre[0]+1 <= 18) or (u == 5 and pre[0]+5 <= 18):
+                        pre[0] += 1*u
+                        m = False
+                if event.key == pygame.K_LEFT:
+                    if (u == 1 and pre[0]-1 >= 0) or (u == 5 and pre[0]-5 >= 0):
+                        pre[0] -= 1*u
+                        m = False
+                if event.key == pygame.K_UP:
+                    if (u == 1 and pre[1]-1 >= 0) or (u == 5 and pre[1]-5 >= 0):
+                        pre[1] -= 1*u
+                        m = False   
+                if event.key == pygame.K_DOWN:
+                    if (u == 1 and pre[1]+1 <= 18) or (u == 5 and pre[1]+5 <= 18):
+                        pre[1] += 1*u
+                        m = False
+                if event.key == pygame.K_SPACE:
+                    if a[pre[1]][pre[0]] == 0:
+                        if turn == 0:
+                            a[pre[1]][pre[0]] = 1
+                            turn = 1
+                        elif turn == 1:
+                            a[pre[1]][pre[0]] = 2
+                            turn = 0
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_LCTRL:
+                    u = 1
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     x, y = event.pos
@@ -135,9 +173,32 @@ def game():
                         a[y][x] = 2
                         turn = 0
                         run = True
+
+        design()
+        go_stone()
+
+        x, y = pygame.mouse.get_pos()
+
+        if x != x1 and y != y1:
+            m = True
+        if m:
+            if turn == 0:
+                for i in range(1, 20):
+                    pygame.draw.circle(screen, (40-i*2, 40-i*2, 40-i*2), (x, y), 20-i)
+            elif turn == 1:
+                for i in range(1, 20):
+                    pygame.draw.circle(screen, (205+i*2.5, 205+i*2.5, 205+i*2.5), (x, y), 20-i)
+        else:
+            if turn == 0:
+                for i in range(1, 20):
+                    pygame.draw.circle(screen, (40-i*2, 40-i*2, 40-i*2), (50+pre[0]*50, 50+pre[1]*50), 21-i)
+            elif turn == 1:
+                for i in range(1, 20):
+                    pygame.draw.circle(screen, (205+i*2.5, 205+i*2.5, 205+i*2.5), (50+pre[0]*50, 50+pre[1]*50), 20-i)
+        x1, y1 = x, y
+
         font_player(turn)
 
-        go_stone()
         if p1.check(a):
             w = 1
             run = False
@@ -157,11 +218,15 @@ def main():
     fa = Font.render("push the space", True, (255, 255, 0))
     fb = Font.render("game start", True, (255, 255, 0))
 
+    c = False
     run = True
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    run = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     c = True
